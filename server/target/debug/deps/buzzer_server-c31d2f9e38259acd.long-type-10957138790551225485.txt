@@ -1,2 +1,0 @@
-fn(State<Arc<std::sync::Mutex<RoundState>>>, Json<PlayerRequest>) -> impl std::future::Future<Output = (StatusCode, PlayerJoinResponse)> {handlers::join}
-fn(State<Arc<std::sync::Mutex<RoundState>>>, Json<PlayerRequest>) -> impl std::future::Future<Output = (StatusCode, PlayerJoinResponse)> {handlers::join}: Handler<_, _>
