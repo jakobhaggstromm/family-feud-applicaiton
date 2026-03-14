@@ -1,0 +1,75 @@
+# -----------------------------
+# Rust / Cargo
+# -----------------------------
+/target/                 # Build output
+**/*.rs.bk              # Backup Rust files
+Cargo.lock              # Lock file (ignore for libraries, keep for apps)
+*.rmeta                 # Rust metadata files
+*.d                     # Build dependency files
+
+# -----------------------------
+# Generated / Build files
+# -----------------------------
+/build/                  # Custom build folder
+*.exe                    # Windows executables
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# -----------------------------
+# Editor / IDE
+# -----------------------------
+# VS Code
+.vscode/
+
+# JetBrains (IntelliJ, CLion, etc.)
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Neovim
+*.swp
+*.swo
+*.swn
+
+# Emacs
+*~
+
+# -----------------------------
+# OS-specific
+# -----------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~                      # Temporary files
+.cache/
+
+# -----------------------------
+# Environment / Secrets
+# -----------------------------
+.env
+.env.local
+.env.*.local
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+
+# -----------------------------
+# CI / Temporary / Misc
+# -----------------------------
+/dist/
+/out/
+/coverage/
+/*.tmp
