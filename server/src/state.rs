@@ -16,6 +16,8 @@ pub struct GameState {
 
     // ── Round state ──
     pub phase: GamePhase,
+    /// Seconds remaining in countdown (only relevant during Countdown phase).
+    pub countdown_seconds: u8,
     /// The team currently answering (or whose points are at stake).
     pub controlling_team_id: Option<u32>,
     /// Wrong guesses this round (max 3 → steal).
@@ -37,6 +39,7 @@ impl GameState {
             questions: Vec::new(),
             current_question_index: 0,
             phase: GamePhase::Lobby,
+            countdown_seconds: 0,
             controlling_team_id: None,
             strikes: 0,
             answered_teams: Vec::new(),

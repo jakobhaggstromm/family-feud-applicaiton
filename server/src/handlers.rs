@@ -9,7 +9,7 @@ use futures::{SinkExt, StreamExt};
 use std::sync::{Arc, Mutex};
 
 use crate::models::{
-    AnswerResponse, ClientMessage, QuestionResponse, ServerMessage, StateResponse,
+    AnswerResponse, ClientMessage, GamePhase, QuestionResponse, ServerMessage, StateResponse,
 };
 use crate::state::GameState;
 
@@ -180,7 +180,14 @@ fn process_message(
             })
         }
         ClientMessage::StartGame => {
-            authorized_host_action(state, socket_admin_token, handle_start_game)
+            let outcome = authorized_host_action(state, socket_admin_token, handle_start_game);
+            if outcome.broadcast_state {
+                let phase = state.lock().unwrap().phase.clone();
+                if phase == GamePhase::Countdown {
+                    spawn_countdown(Arc::clone(state));
+                }
+            }
+            outcome
         }
         ClientMessage::LoadQuestions { filename } => {
             authorized_host_action(state, socket_admin_token, move |shared_state| {
@@ -197,7 +204,14 @@ fn process_message(
             handle_award_point(shared_state, team_id, answer_index)
         }),
         ClientMessage::NextQuestion => {
-            authorized_host_action(state, socket_admin_token, handle_next_question)
+            let outcome = authorized_host_action(state, socket_admin_token, handle_next_question);
+            if outcome.broadcast_state {
+                let phase = state.lock().unwrap().phase.clone();
+                if phase == GamePhase::Countdown {
+                    spawn_countdown(Arc::clone(state));
+                }
+            }
+            outcome
         }
         ClientMessage::ResetGame => {
             authorized_host_action(state, socket_admin_token, handle_reset_game)
@@ -269,6 +283,12 @@ pub fn build_state_response(s: &GameState, _is_admin: bool) -> ServerMessage {
             .collect(),
     });
 
+    let countdown_seconds = if s.phase == GamePhase::Countdown {
+        Some(s.countdown_seconds)
+    } else {
+        None
+    };
+
     ServerMessage::State(StateResponse {
         phase: s.phase.clone(),
         teams: s.teams.clone(),
@@ -278,6 +298,7 @@ pub fn build_state_response(s: &GameState, _is_admin: bool) -> ServerMessage {
         round_points: s.round_points(),
         current_question_index: s.current_question_index,
         total_questions: s.questions.len(),
+        countdown_seconds,
     })
 }
 
@@ -285,6 +306,30 @@ fn broadcast_state(state: &SharedState) {
     let s = state.lock().unwrap();
     let state_msg = build_state_response(&s, false);
     let _ = s.broadcast_tx.send(state_msg);
+}
+
+fn spawn_countdown(state: SharedState) {
+    tokio::spawn(async move {
+        for seconds_left in [2u8, 1] {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            let mut s = state.lock().unwrap();
+            if s.phase != GamePhase::Countdown {
+                return;
+            }
+            s.countdown_seconds = seconds_left;
+            let msg = build_state_response(&s, false);
+            let _ = s.broadcast_tx.send(msg);
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        let mut s = state.lock().unwrap();
+        if s.phase != GamePhase::Countdown {
+            return;
+        }
+        s.phase = GamePhase::Play;
+        s.countdown_seconds = 0;
+        let msg = build_state_response(&s, false);
+        let _ = s.broadcast_tx.send(msg);
+    });
 }
 
 async fn send_json(

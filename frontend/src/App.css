@@ -454,6 +454,47 @@ body.display-mode #root {
   font-size: 1rem;
 }
 
+/* ===== Countdown ===== */
+.countdown-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 0.5rem;
+}
+
+.countdown-label {
+  font-family: 'Russo One', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.countdown-number {
+  font-family: 'Russo One', sans-serif;
+  font-size: 5rem;
+  color: #fff;
+  line-height: 1;
+  animation: countdown-pulse 1s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(255, 193, 7, 0.6);
+}
+
+@keyframes countdown-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.85;
+  }
+}
+
 .buzz-feedback.success {
   background: rgba(56, 142, 60, 0.2);
   color: #66bb6a;

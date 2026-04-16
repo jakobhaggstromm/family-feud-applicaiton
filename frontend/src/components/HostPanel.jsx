@@ -105,9 +105,6 @@ export default function HostPanel({ gameState, lastMessage, onAction }) {
           <button className="btn btn-primary" onClick={() => onAction({ action: 'start_game' })}>
             Start Game
           </button>
-          <button className="btn btn-primary" onClick={() => onAction({ action: 'start_round' })} disabled={isGameOver}>
-            Start Round
-          </button>
           <button className="btn btn-secondary" onClick={() => onAction({ action: 'strike' })} disabled={isGameOver}>
             Strike
           </button>

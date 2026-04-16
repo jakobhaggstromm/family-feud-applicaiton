@@ -138,6 +138,8 @@ pub struct Question {
 pub enum GamePhase {
     /// Setting up teams / loading questions.
     Lobby,
+    /// 3-second countdown before buzzers open.
+    Countdown,
     /// Teams are buzzing to win control.
     Play,
     /// The controlling team is guessing answers.
@@ -162,6 +164,8 @@ pub struct StateResponse {
     pub round_points: u32,
     pub current_question_index: usize,
     pub total_questions: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub countdown_seconds: Option<u8>,
 }
 
 /// Question as seen by clients — unrevealed answer text is hidden.

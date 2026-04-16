@@ -71,9 +71,10 @@ pub fn handle_start_game(state: &SharedState) -> ServerMessage {
 
     s.current_question_index = 0;
     s.teams.iter_mut().for_each(|team| team.score = 0);
-    s.phase = GamePhase::Play;
+    s.phase = GamePhase::Countdown;
+    s.countdown_seconds = 3;
     s.reset_round();
-    println!("Game started!");
+    println!("Game started — countdown begins!");
 
     ServerMessage::ActionResult {
         success: true,
@@ -121,7 +122,10 @@ pub fn handle_load_questions(state: &SharedState, filename: &str) -> ServerMessa
 pub fn handle_start_round(state: &SharedState) -> ServerMessage {
     let mut s = state.lock().unwrap();
 
-    if s.phase != GamePhase::Lobby && s.phase != GamePhase::RoundOver {
+    if s.phase != GamePhase::Lobby
+        && s.phase != GamePhase::RoundOver
+        && s.phase != GamePhase::Countdown
+    {
         return ServerMessage::ActionResult {
             success: false,
             error: Some("Cannot start a round in current phase".to_string()),
@@ -151,9 +155,10 @@ pub fn handle_next_question(state: &SharedState) -> ServerMessage {
         s.phase = GamePhase::GameOver;
         println!("No more questions — game over!");
     } else {
-        s.phase = GamePhase::Play;
+        s.phase = GamePhase::Countdown;
+        s.countdown_seconds = 3;
         println!(
-            "Moving to question {} of {}",
+            "Moving to question {} of {} — countdown begins!",
             s.current_question_index + 1,
             s.questions.len()
         );

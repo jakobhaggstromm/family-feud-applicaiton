@@ -5,6 +5,8 @@ export default function BuzzerScreen({ gameState, lastMessage, onBuzz, onLeave, 
   const [buzzing, setBuzzing] = useState(false);
 
   const phase = gameState?.phase;
+  const countdownSeconds = gameState?.countdown_seconds;
+  const isCountdown = phase === 'countdown';
   const isPlayPhase = phase === 'play';
   const controllingTeamId = gameState?.controlling_team_id;
   const controllingTeam = gameState?.teams?.find((team) => team.id === controllingTeamId);
@@ -33,7 +35,7 @@ export default function BuzzerScreen({ gameState, lastMessage, onBuzz, onLeave, 
   return (
     <div className="buzzer-screen">
       <div className="buzzer-header">
-        <span className="player-name">{playerName}</span>
+        <span className="player-name">Playing as <strong>{playerName}</strong></span>
         <button className="btn btn-small btn-danger" onClick={onLeave}>Leave</button>
       </div>
 
@@ -51,7 +53,14 @@ export default function BuzzerScreen({ gameState, lastMessage, onBuzz, onLeave, 
           </div>
         )}
 
-        {!isGameOver && (
+        {!isGameOver && isCountdown && (
+          <div className="countdown-overlay">
+            <p className="countdown-label">GET READY!</p>
+            <p className="countdown-number">{countdownSeconds ?? 3}</p>
+          </div>
+        )}
+
+        {!isGameOver && !isCountdown && (
           <div className="player-question-board">
             <h3>{question?.text || 'Waiting for question...'}</h3>
             <ul className="player-answer-list">
