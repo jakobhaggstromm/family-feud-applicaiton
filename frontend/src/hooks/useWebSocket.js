@@ -10,6 +10,7 @@ export function useWebSocket() {
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
   const shouldReconnectRef = useRef(true);
+  const onMessageRef = useRef(null);
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) return;
@@ -24,11 +25,12 @@ export function useWebSocket() {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setLastMessage(data);
-
       if (data.type === 'state') {
         setGameState(data);
+      } else {
+        setLastMessage(data);
       }
+      if (onMessageRef.current) onMessageRef.current(data);
     };
 
     ws.onclose = () => {
@@ -61,5 +63,5 @@ export function useWebSocket() {
     }
   }, []);
 
-  return { gameState, lastMessage, connected, sendMessage };
+  return { gameState, lastMessage, onMessageRef, connected, sendMessage };
 }

@@ -7,7 +7,7 @@ import DisplayBoard from './components/DisplayBoard';
 import './App.css';
 
 function App() {
-  const { gameState, lastMessage, connected, sendMessage } = useWebSocket();
+  const { gameState, lastMessage, onMessageRef, connected, sendMessage } = useWebSocket();
   const pathname = window.location.pathname.toLowerCase();
   const page = pathname.includes('/admin') ? 'admin' : pathname.includes('/display') ? 'display' : 'player';
   const [playerName, setPlayerName] = useState('');
@@ -31,37 +31,38 @@ function App() {
     setAdminStatus(page === 'admin' && adminToken ? 'pending' : 'idle');
   }, [page]);
 
+  // Register a direct per-message callback to avoid React batching dropping messages.
+  // This fires synchronously for every WS message, so join_result is never skipped
+  // even when it arrives back-to-back with a state broadcast.
   useEffect(() => {
-    if (!lastMessage) return;
-
-    if (lastMessage.type === 'admin_auth_result') {
-      if (lastMessage.success) {
-        setAdminStatus('granted');
-        setAdminError('');
-        setAdminToken(lastMessage.token);
-        sessionStorage.setItem('admin_token', lastMessage.token);
-      } else {
-        if (adminToken) {
+    onMessageRef.current = (msg) => {
+      if (msg.type === 'admin_auth_result') {
+        if (msg.success) {
+          setAdminStatus('granted');
+          setAdminError('');
+          setAdminToken(msg.token);
+          sessionStorage.setItem('admin_token', msg.token);
+        } else {
           setAdminToken(null);
           sessionStorage.removeItem('admin_token');
+          setAdminStatus('denied');
+          setAdminError(msg.error || 'Admin authentication failed');
         }
-        setAdminStatus('denied');
-        setAdminError(lastMessage.error || 'Admin authentication failed');
       }
-    }
 
-    if (lastMessage.type === 'join_result' && lastMessage.success && pendingJoinRef.current) {
-      pendingJoinRef.current = false;
-      setToken(lastMessage.token);
-      sessionStorage.setItem('buzzer_token', lastMessage.token);
-    }
+      if (msg.type === 'join_result' && msg.success) {
+        pendingJoinRef.current = false;
+        setToken(msg.token);
+        sessionStorage.setItem('buzzer_token', msg.token);
+      }
 
-    if (lastMessage.type === 'leave_result' && lastMessage.success && pendingLeaveRef.current) {
-      pendingLeaveRef.current = false;
-      setToken(null);
-      sessionStorage.removeItem('buzzer_token');
-    }
-  }, [lastMessage]);
+      if (msg.type === 'leave_result' && msg.success) {
+        pendingLeaveRef.current = false;
+        setToken(null);
+        sessionStorage.removeItem('buzzer_token');
+      }
+    };
+  });
 
   useEffect(() => {
     if (connected && token && page === 'player') {
