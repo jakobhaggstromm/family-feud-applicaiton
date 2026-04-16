@@ -1,7 +1,7 @@
 # -----------------------------
 # Rust / Cargo
 # -----------------------------
-server/target                # Build output
+server/target/              # Build output
 **/*.rs.bk              # Backup Rust files
 Cargo.lock              # Lock file (ignore for libraries, keep for apps)
 *.rmeta                 # Rust metadata files
@@ -69,7 +69,9 @@ Desktop.ini
 # -----------------------------
 # CI / Temporary / Misc
 # -----------------------------
-/dist/
+frontend/dist/
+frontend/node_modules/
 /out/
 /coverage/
 /*.tmp
+

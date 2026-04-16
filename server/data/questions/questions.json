@@ -1,0 +1,31 @@
+[
+    {
+        "question": "Name a popular pet",
+        "answers": [
+            {"answer": "Dog", "points": 40},
+            {"answer": "Cat", "points": 30},
+            {"answer": "Fish", "points": 20},
+            {"answer": "Bird", "points": 10}
+        ]
+    },
+    {
+        "question": "Name a common household chore",
+        "answers": [
+            {"answer": "Dishes", "points": 35},
+            {"answer": "Laundry", "points": 25},
+            {"answer": "Vacuuming", "points": 20},
+            {"answer": "Dusting", "points": 15},
+            {"answer": "Mopping", "points": 5}
+        ]
+    },
+    {
+        "question": "Name a type of fruit",
+        "answers": [
+            {"answer": "Apple", "points": 30},
+            {"answer": "Banana", "points": 25},
+            {"answer": "Orange", "points": 20},
+            {"answer": "Grapes", "points": 15},
+            {"answer": "Strawberry", "points": 10}
+        ]
+    }
+]
