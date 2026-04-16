@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useWebSocket } from './hooks/useWebSocket';
 import JoinScreen from './components/JoinScreen';
 import BuzzerScreen from './components/BuzzerScreen';
@@ -17,8 +17,8 @@ function App() {
   const [adminStatus, setAdminStatus] = useState(page === 'admin' ? 'pending' : 'idle');
   const [adminError, setAdminError] = useState('');
 
-  const [pendingJoin, setPendingJoin] = useState(false);
-  const [pendingLeave, setPendingLeave] = useState(false);
+  const pendingJoinRef = useRef(false);
+  const pendingLeaveRef = useRef(false);
 
   useEffect(() => {
     document.body.classList.toggle('display-mode', page === 'display');
@@ -50,22 +50,22 @@ function App() {
       }
     }
 
-    if (lastMessage.type === 'join_result' && lastMessage.success && pendingJoin) {
+    if (lastMessage.type === 'join_result' && lastMessage.success && pendingJoinRef.current) {
+      pendingJoinRef.current = false;
       setToken(lastMessage.token);
       sessionStorage.setItem('buzzer_token', lastMessage.token);
-      setPendingJoin(false);
     }
 
-    if (lastMessage.type === 'leave_result' && lastMessage.success && pendingLeave) {
+    if (lastMessage.type === 'leave_result' && lastMessage.success && pendingLeaveRef.current) {
+      pendingLeaveRef.current = false;
       setToken(null);
       sessionStorage.removeItem('buzzer_token');
-      setPendingLeave(false);
     }
-  }, [lastMessage, pendingJoin, pendingLeave]);
+  }, [lastMessage]);
 
   useEffect(() => {
     if (connected && token && page === 'player') {
-      setPendingJoin(true);
+      pendingJoinRef.current = true;
       sendMessage({ action: 'join', name: playerName || 'Reconnecting', token });
     }
   }, [connected, token, page, playerName, sendMessage]);
@@ -86,7 +86,7 @@ function App() {
 
   const handleJoin = useCallback((name) => {
     setPlayerName(name);
-    setPendingJoin(true);
+    pendingJoinRef.current = true;
     sendMessage({ action: 'join', name });
   }, [sendMessage]);
 
@@ -98,7 +98,7 @@ function App() {
 
   const handleLeave = useCallback(() => {
     if (token) {
-      setPendingLeave(true);
+      pendingLeaveRef.current = true;
       sendMessage({ action: 'leave', token });
     }
   }, [sendMessage, token]);
